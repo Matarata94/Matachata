@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+     <RelativeLayout
+         android:id="@+id/container"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         android:orientation="vertical"
+         android:padding="20dp">
+
+          <EditText
+              android:id="@+id/messageEdit"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_alignParentBottom="true"
+              android:layout_marginRight="5dp"
+              android:layout_toLeftOf="@+id/chatSendButton"
+              android:hint="Type message..." />
+
+          <Button
+              android:id="@+id/chatSendButton"
+              android:layout_width="30dp"
+              android:layout_height="25dp"
+              android:layout_alignParentRight="true"
+              android:layout_alignBottom="@+id/messageEdit"
+              android:background="@drawable/send_icon"/>
+
+          <ListView
+              android:id="@+id/messagesContainer"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_alignParentLeft="false"
+              android:layout_alignParentTop="false"
+              android:layout_marginBottom="20dp"
+              android:layout_above="@+id/messageEdit"
+              android:layout_below="@+id/meLbl"
+              android:layout_marginTop="10dp"
+              android:textColor="#ffffff"
+              android:listSelector="@android:color/transparent"
+              android:transcriptMode="alwaysScroll"
+              android:divider="@null" />
+
+          <TextView
+              android:id="@+id/friendLabel"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="left|center_vertical"
+              android:text="MyFriend"
+              android:textColor="#03a9f4"
+              android:textSize="20dp" />
+
+          <TextView
+              android:id="@+id/meLbl"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_alignParentRight="true"
+              android:text="MySelf"
+              android:textColor="#8bc34a"
+              android:textSize="20dp" />
+
+     </RelativeLayout>
+</LinearLayout>
