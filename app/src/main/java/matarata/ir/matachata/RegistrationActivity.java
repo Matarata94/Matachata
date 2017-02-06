@@ -28,7 +28,7 @@ public class RegistrationActivity extends AppCompatActivity {
     public static final int SERVERPORT = 30000;
     public static final String SERVER_IP = "192.168.1.3";
     public static String socketResult ="";
-    private DatabaseHandler db = new DatabaseHandler(this);;
+    private DatabaseHandler db = new DatabaseHandler(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,17 +40,7 @@ public class RegistrationActivity extends AppCompatActivity {
         registrationRl = (RelativeLayout) findViewById(R.id.registration_rl);
         usernameET = (MaterialEditText) findViewById(R.id.registration_username);
         passwordET = (MaterialEditText) findViewById(R.id.registration_password);
-        new Thread(new SocketConnectionThread()).start();
-
-        db.databasecreate();
-        db.open();
-        String registered = db.Query(1,2);
-        if(registered.equals("yes")){
-            Intent in = new Intent(RegistrationActivity.this,ChatActivity.class);
-            startActivity(in);
-            finish();
-        }
-        db.close();
+        new Thread(new SocketConnectionThread(SERVER_IP,SERVERPORT)).start();
 
         goBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,7 +59,7 @@ public class RegistrationActivity extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 public void run() {
                                     ++counterSecond;
-                                    if(socketResult.equals("inserted")){
+                                    if(socketResult.equals("inserted") | socketResult.equals("identified")){
                                         db.open();
                                         db.Update(username,1,"username");
                                         db.Update("yes",1,"registered");
@@ -89,12 +79,18 @@ public class RegistrationActivity extends AppCompatActivity {
                                                     Intent in = new Intent(RegistrationActivity.this,ChatActivity.class);
                                                     startActivity(in);
                                                     finish();
-                                                } catch (Exception e) {
-
-                                                }
+                                                } catch (Exception e) {}
                                             }
                                         });
                                         closeActivity.start();
+                                    }else if(socketResult.equals("identify_failed")){
+                                        Toast.makeText(getApplicationContext(),"Username exist. Choose another username or enter correct password!" ,Toast.LENGTH_LONG).show();
+                                        myIndicator.hide();
+                                        goBtn.setVisibility(View.VISIBLE);
+                                        goBtn.setText("Go again!");
+                                        counterSecond = 0;
+                                        socketResult = "";
+                                        tm.cancel();
                                     }else if(socketResult.contains("Insert failed") | counterSecond == 5){
                                         Toast.makeText(getApplicationContext(),"Failure. Please try again!" ,Toast.LENGTH_LONG).show();
                                         myIndicator.hide();
@@ -113,4 +109,15 @@ public class RegistrationActivity extends AppCompatActivity {
         });
 
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(SocketConnectionThread.socket.isConnected()){
+            try{
+                SocketConnectionThread.socket.close();
+            }catch (Exception e){}
+        }
+    }
+
 }

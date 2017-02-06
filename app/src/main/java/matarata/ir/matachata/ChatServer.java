@@ -13,14 +13,11 @@ import java.io.PrintWriter;
 
 import static matarata.ir.matachata.SocketConnectionThread.socket;
 
-public class RegistrationServer extends AsyncTask<String, Void, String> {
+public class ChatServer extends AsyncTask<String, Void, String> {
 
     private Context context;
-    public PrintWriter output;
-    public OutputStream out;
-    public InputStream input;
 
-    public RegistrationServer(Context context) {
+    public ChatServer(Context context) {
         this.context = context;
     }
 
@@ -39,11 +36,11 @@ public class RegistrationServer extends AsyncTask<String, Void, String> {
             JSONObject myJsonObject = new JSONObject();
             myJsonObject.put("username", username);
             myJsonObject.put("password", password);
-            out = socket.getOutputStream();
-            output = new PrintWriter(out);
+            OutputStream out = socket.getOutputStream();
+            PrintWriter output = new PrintWriter(out);
             output.println(myJsonObject);
             output.flush();
-            input = socket.getInputStream();
+            InputStream input = socket.getInputStream();
             int lockSeconds = 10*1000;
             long lockThreadCheckpoint = System.currentTimeMillis();
             int availableBytes = input.available();
@@ -56,6 +53,9 @@ public class RegistrationServer extends AsyncTask<String, Void, String> {
             byte[] buffer = new byte[availableBytes];
             input.read(buffer, 0, availableBytes);
             result = new String(buffer);
+            output.close();
+            input.close();
+            socket.close();
 
             return result;
         } catch (Exception e) {
@@ -72,7 +72,7 @@ public class RegistrationServer extends AsyncTask<String, Void, String> {
                 String jsonTempResult = jsonObj.getString("serverJsonResult");
                 RegistrationActivity.socketResult = jsonTempResult;
             } catch (JSONException e) {
-                Toast.makeText(context, jsonStr + "\nJson Error: " + e.toString(), Toast.LENGTH_LONG).show();
+                Toast.makeText(context, jsonStr + "--Json Error: " + e.toString(), Toast.LENGTH_LONG).show();
             }
         } else {
             Toast.makeText(context, "Couldn't get any JSON data.", Toast.LENGTH_LONG).show();

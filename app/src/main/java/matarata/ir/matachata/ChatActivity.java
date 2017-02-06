@@ -1,5 +1,6 @@
 package matarata.ir.matachata;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -9,6 +10,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ public class ChatActivity extends AppCompatActivity {
     private Button sendBtn;
     private ChatAdapter adapter;
     private ArrayList<ChatMessage> chatHistory;
+    private DatabaseHandler db = new DatabaseHandler(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,20 +31,6 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         initiate();
-
-    }
-
-    private void initiate(){
-        messagesContainer = (ListView) findViewById(R.id.messagesContainer);
-        messageET = (EditText) findViewById(R.id.messageEdit);
-        sendBtn = (Button) findViewById(R.id.chatSendButton);
-
-        TextView meLabel = (TextView) findViewById(R.id.meLbl);
-        TextView companionLabel = (TextView) findViewById(R.id.friendLabel);
-        RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
-        companionLabel.setText("My Buddy");
-        loadDummyHistory();
-
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,18 +38,37 @@ public class ChatActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(messageText)) {
                     return;
                 }
-
                 ChatMessage chatMessage = new ChatMessage();
                 chatMessage.setId(122);//dummy
                 chatMessage.setMessage(messageText);
                 chatMessage.setDate(DateFormat.getDateTimeInstance().format(new Date()));
                 chatMessage.setMe(true);
-
                 messageET.setText("");
-
                 displayMessage(chatMessage);
             }
         });
+
+    }
+
+    private void initiate(){
+        db.databasecreate();
+        db.open();
+        String registered = db.Query(1,2);
+        if(registered.equals("no")){
+            Intent in = new Intent(ChatActivity.this,RegistrationActivity.class);
+            startActivity(in);
+            finish();
+        }else{
+            new Thread(new SocketConnectionThread(RegistrationActivity.SERVER_IP,RegistrationActivity.SERVERPORT)).start();
+            messagesContainer = (ListView) findViewById(R.id.messagesContainer);
+            messageET = (EditText) findViewById(R.id.messageEdit);
+            sendBtn = (Button) findViewById(R.id.chatSendButton);
+            TextView meLabel = (TextView) findViewById(R.id.meLbl);
+            TextView friendLabel = (TextView) findViewById(R.id.friendLabel);
+            RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
+            loadDummyHistory();
+        }
+        db.close();
     }
 
     public void displayMessage(ChatMessage message) {
@@ -99,5 +107,14 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(SocketConnectionThread.socket.isConnected()){
+            try{
+                SocketConnectionThread.socket.close();
+                Toast.makeText(getApplicationContext(),"Socket Closed!",Toast.LENGTH_LONG).show();
+            }catch (Exception e){}
+        }
+    }
 }
