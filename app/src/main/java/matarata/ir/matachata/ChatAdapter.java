@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -67,7 +68,7 @@ public class ChatAdapter extends BaseAdapter {
         setAlignment(holder, myMsg);
         holder.txtMessage.setText(chatMessage.getMessage());
         holder.txtInfo.setText(chatMessage.getDate());
-
+        holder.imgStatus.setBackgroundResource(chatMessage.getStatusImage());
 
         return convertView;
     }
@@ -81,7 +82,7 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     private void setAlignment(ViewHolder holder, boolean isMe) {
-        if (!isMe) {
+        if (isMe) {
             holder.contentWithBG.setBackgroundResource(R.drawable.in_message_bg);
 
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
@@ -122,10 +123,11 @@ public class ChatAdapter extends BaseAdapter {
 
     private ViewHolder createViewHolder(View v) {
         ViewHolder holder = new ViewHolder();
-        holder.txtMessage = (TextView) v.findViewById(R.id.txtMessage);
-        holder.content = (LinearLayout) v.findViewById(R.id.content);
-        holder.contentWithBG = (LinearLayout) v.findViewById(R.id.contentWithBackground);
-        holder.txtInfo = (TextView) v.findViewById(R.id.txtInfo);
+        holder.txtMessage = (TextView) v.findViewById(R.id.list_item_chat_txtMessage);
+        holder.content = (LinearLayout) v.findViewById(R.id.list_item_chat_content);
+        holder.contentWithBG = (LinearLayout) v.findViewById(R.id.list_item_chat_contentWithBackground);
+        holder.txtInfo = (TextView) v.findViewById(R.id.list_item_chat_txtInfo);
+        holder.imgStatus = (ImageView) v.findViewById(R.id.list_item_chat_imgStatus);
         return holder;
     }
 
@@ -133,6 +135,7 @@ public class ChatAdapter extends BaseAdapter {
     private static class ViewHolder {
         public TextView txtMessage;
         public TextView txtInfo;
+        public ImageView imgStatus;
         public LinearLayout content;
         public LinearLayout contentWithBG;
     }

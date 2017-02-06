@@ -3,23 +3,40 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
     <LinearLayout
-        android:id="@+id/content"
+        android:id="@+id/list_item_chat_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="8dp"
         android:layout_alignParentRight="true"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/txtInfo"
+        <LinearLayout
+            android:id="@+id/list_item_chat_statusContent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:textSize="9sp"
-            android:textColor="@android:color/darker_gray" />
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/list_item_chat_imgStatus"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_marginRight="5dp"
+                android:src="@drawable/wait_icon"/>
+
+            <TextView
+                android:id="@+id/list_item_chat_txtInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:textSize="9sp"
+                android:textColor="@android:color/darker_gray" />
+
+        </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/contentWithBackground"
+            android:id="@+id/list_item_chat_contentWithBackground"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
@@ -29,7 +46,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/txtMessage"
+                android:id="@+id/list_item_chat_txtMessage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/black"
@@ -38,4 +55,6 @@
         </LinearLayout>
 
     </LinearLayout>
+
+
 </RelativeLayout>

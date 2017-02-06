@@ -25,9 +25,9 @@ public class RegistrationActivity extends AppCompatActivity {
     MaterialEditText usernameET,passwordET;
     private Timer tm;
     private int counterSecond=0;
-    public static final int SERVERPORT = 30000;
-    public static final String SERVER_IP = "192.168.1.3";
-    public static String socketResult ="";
+    public static final int SERVERPORT = 4000;
+    public static final String SERVER_IP = "192.168.43.69";
+    public static String socketResultRegister ="";
     private DatabaseHandler db = new DatabaseHandler(this);
 
     @Override
@@ -50,7 +50,7 @@ public class RegistrationActivity extends AppCompatActivity {
                 if(username.equals("") | password.equals("")){
                     Toast.makeText(getApplicationContext(),"Please enter username and password!",Toast.LENGTH_LONG).show();
                 }else{
-                    new RegistrationServer(RegistrationActivity.this).execute(username,password);
+                    new RegistrationServer(RegistrationActivity.this).execute("register",username,password);
                     goBtn.setVisibility(View.INVISIBLE);
                     myIndicator.smoothToShow();
                     tm =new Timer();
@@ -59,7 +59,7 @@ public class RegistrationActivity extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 public void run() {
                                     ++counterSecond;
-                                    if(socketResult.equals("inserted") | socketResult.equals("identified")){
+                                    if(socketResultRegister.equals("inserted") | socketResultRegister.equals("identified")){
                                         db.open();
                                         db.Update(username,1,"username");
                                         db.Update("yes",1,"registered");
@@ -69,7 +69,7 @@ public class RegistrationActivity extends AppCompatActivity {
                                         colorFade.start();
                                         myIndicator.smoothToHide();
                                         counterSecond = 0;
-                                        socketResult = "";
+                                        socketResultRegister = "";
                                         tm.cancel();
                                         Thread closeActivity = new Thread(new Runnable() {
                                             @Override
@@ -83,21 +83,21 @@ public class RegistrationActivity extends AppCompatActivity {
                                             }
                                         });
                                         closeActivity.start();
-                                    }else if(socketResult.equals("identify_failed")){
+                                    }else if(socketResultRegister.equals("identify_failed")){
                                         Toast.makeText(getApplicationContext(),"Username exist. Choose another username or enter correct password!" ,Toast.LENGTH_LONG).show();
                                         myIndicator.hide();
                                         goBtn.setVisibility(View.VISIBLE);
                                         goBtn.setText("Go again!");
                                         counterSecond = 0;
-                                        socketResult = "";
+                                        socketResultRegister = "";
                                         tm.cancel();
-                                    }else if(socketResult.contains("Insert failed") | counterSecond == 5){
+                                    }else if(socketResultRegister.contains("Insert failed") | counterSecond == 5){
                                         Toast.makeText(getApplicationContext(),"Failure. Please try again!" ,Toast.LENGTH_LONG).show();
                                         myIndicator.hide();
                                         goBtn.setVisibility(View.VISIBLE);
                                         goBtn.setText("Go again!");
                                         counterSecond = 0;
-                                        socketResult = "";
+                                        socketResultRegister = "";
                                         tm.cancel();
                                     }
                                 }

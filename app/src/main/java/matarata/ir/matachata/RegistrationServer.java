@@ -30,13 +30,15 @@ public class RegistrationServer extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... arg0) {
-        String username = arg0[0];
-        String password = arg0[1];
+        String requestType = arg0[0];
+        String username = arg0[1];
+        String password = arg0[2];
         String result = "";
 
         try {
             ///Socket Connection
             JSONObject myJsonObject = new JSONObject();
+            myJsonObject.put("requestType", requestType);
             myJsonObject.put("username", username);
             myJsonObject.put("password", password);
             out = socket.getOutputStream();
@@ -70,7 +72,7 @@ public class RegistrationServer extends AsyncTask<String, Void, String> {
             try {
                 JSONObject jsonObj = new JSONObject(jsonStr);
                 String jsonTempResult = jsonObj.getString("serverJsonResult");
-                RegistrationActivity.socketResult = jsonTempResult;
+                RegistrationActivity.socketResultRegister = jsonTempResult;
             } catch (JSONException e) {
                 Toast.makeText(context, jsonStr + "\nJson Error: " + e.toString(), Toast.LENGTH_LONG).show();
             }

@@ -9,6 +9,7 @@ public class ChatMessage {
     private String message;
     private Long userId;
     private String dateTime;
+    private int statusImage;
 
     public long getId() {
         return id;
@@ -49,4 +50,8 @@ public class ChatMessage {
     public void setDate(String dateTime) {
         this.dateTime = dateTime;
     }
+
+    public int getStatusImage(){return statusImage;}
+
+    public void setStatusImage(int statusImage){this.statusImage = statusImage;}
 }
