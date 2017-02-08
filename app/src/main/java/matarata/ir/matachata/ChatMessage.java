@@ -1,8 +1,5 @@
 package matarata.ir.matachata;
 
-/**
- * Created by Technovibe on 17-04-2015.
- */
 public class ChatMessage {
     private long id;
     private boolean isMe;

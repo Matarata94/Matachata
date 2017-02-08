@@ -22,11 +22,12 @@ public class RegistrationActivity extends AppCompatActivity {
     AVLoadingIndicatorView myIndicator;
     Button goBtn;
     RelativeLayout registrationRl;
-    MaterialEditText usernameET,passwordET;
+    MaterialEditText usernameET,passwordET,opponentUsernameET;
     private Timer tm;
     private int counterSecond=0;
+    private String username, password, opponentUsername;
     public static final int SERVERPORT = 4000;
-    public static final String SERVER_IP = "192.168.43.69";
+    public static final String SERVER_IP = "192.168.1.3";
     public static String socketResultRegister ="";
     private DatabaseHandler db = new DatabaseHandler(this);
 
@@ -40,17 +41,19 @@ public class RegistrationActivity extends AppCompatActivity {
         registrationRl = (RelativeLayout) findViewById(R.id.registration_rl);
         usernameET = (MaterialEditText) findViewById(R.id.registration_username);
         passwordET = (MaterialEditText) findViewById(R.id.registration_password);
+        opponentUsernameET = (MaterialEditText) findViewById(R.id.registration_opponent_username);
         new Thread(new SocketConnectionThread(SERVER_IP,SERVERPORT)).start();
 
         goBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final String username = usernameET.getText().toString();
-                String password = passwordET.getText().toString();
+                username = usernameET.getText().toString();
+                password = passwordET.getText().toString();
+                opponentUsername = opponentUsernameET.getText().toString();
                 if(username.equals("") | password.equals("")){
                     Toast.makeText(getApplicationContext(),"Please enter username and password!",Toast.LENGTH_LONG).show();
                 }else{
-                    new RegistrationServer(RegistrationActivity.this).execute("register",username,password);
+                    new RegistrationServer(RegistrationActivity.this).execute("register",username,password,opponentUsername);
                     goBtn.setVisibility(View.INVISIBLE);
                     myIndicator.smoothToShow();
                     tm =new Timer();
@@ -59,9 +62,10 @@ public class RegistrationActivity extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 public void run() {
                                     ++counterSecond;
-                                    if(socketResultRegister.equals("inserted") | socketResultRegister.equals("identified")){
+                                    if(socketResultRegister.equals("registerDone") | socketResultRegister.equals("identified")){
                                         db.open();
                                         db.Update(username,1,"username");
+                                        db.Update(opponentUsername,1,"opponentUsername");
                                         db.Update("yes",1,"registered");
                                         db.close();
                                         ObjectAnimator colorFade = ObjectAnimator.ofObject(registrationRl, "backgroundColor", new ArgbEvaluator(), Color.parseColor("#00bcd4"), 0xff8bc34a);
@@ -91,7 +95,8 @@ public class RegistrationActivity extends AppCompatActivity {
                                         counterSecond = 0;
                                         socketResultRegister = "";
                                         tm.cancel();
-                                    }else if(socketResultRegister.contains("Insert failed") | counterSecond == 5){
+                                    }else if(socketResultRegister.contains("Insert failed") | socketResultRegister.contains("Query failed") |
+                                            socketResultRegister.contains("Table Creation failed") | counterSecond == 5){
                                         Toast.makeText(getApplicationContext(),"Failure. Please try again!" ,Toast.LENGTH_LONG).show();
                                         myIndicator.hide();
                                         goBtn.setVisibility(View.VISIBLE);

@@ -33,6 +33,7 @@ public class RegistrationServer extends AsyncTask<String, Void, String> {
         String requestType = arg0[0];
         String username = arg0[1];
         String password = arg0[2];
+        String opponentUsername = arg0[3];
         String result = "";
 
         try {
@@ -41,6 +42,7 @@ public class RegistrationServer extends AsyncTask<String, Void, String> {
             myJsonObject.put("requestType", requestType);
             myJsonObject.put("username", username);
             myJsonObject.put("password", password);
+            myJsonObject.put("oppponentUsername", opponentUsername);
             out = socket.getOutputStream();
             output = new PrintWriter(out);
             output.println(myJsonObject);

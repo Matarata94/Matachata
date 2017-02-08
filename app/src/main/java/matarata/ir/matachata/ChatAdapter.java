@@ -14,9 +14,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-/**
- * Created by Technovibe on 17-04-2015.
- */
 public class ChatAdapter extends BaseAdapter {
 
     private final List<ChatMessage> chatMessages;

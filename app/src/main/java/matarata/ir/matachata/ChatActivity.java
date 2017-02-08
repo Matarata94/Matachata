@@ -11,11 +11,13 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
+import java.util.TimerTask;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -27,8 +29,10 @@ public class ChatActivity extends AppCompatActivity {
     private DatabaseHandler db = new DatabaseHandler(this);
     private Timer tm;
     private int counterSecond=0;
-    public static String socketResultChat ="";
-    private String queryUsername="";
+    public static String socketResultChat="";
+    public static String[] socketClient1ChatsData ={};
+    public static String[] socketClient2ChatsData ={};
+    private String queryUsername="",queryOpponentUsername="",registered="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,13 +47,13 @@ public class ChatActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(messageText)) {
                     return;
                 }
-                ChatMessage chatMessage = new ChatMessage();
+                /*ChatMessage chatMessage = new ChatMessage();
                 chatMessage.setId(122);//dummy
                 chatMessage.setMessage(messageText);
                 chatMessage.setDate(DateFormat.getDateTimeInstance().format(new Date()));
                 chatMessage.setMe(true);
                 messageET.setText("");
-                displayMessage(chatMessage);
+                displayMessage(chatMessage);*/
             }
         });
 
@@ -58,8 +62,9 @@ public class ChatActivity extends AppCompatActivity {
     private void initiate(){
         db.databasecreate();
         db.open();
-        String registered = db.Query(1,2);
         queryUsername = db.Query(1,1);
+        queryUsername = db.Query(1,2);
+        registered = db.Query(1,3);
         if(registered.equals("no")){
             Intent in = new Intent(ChatActivity.this,RegistrationActivity.class);
             startActivity(in);
@@ -69,12 +74,12 @@ public class ChatActivity extends AppCompatActivity {
             new CountDownTimer(5000, 1000) {
                 public void onTick(long millisUntilFinished) {
                     if(SocketConnectionThread.socket.isConnected()){
-                        new ChatServer(ChatActivity.this).execute("chatData",queryUsername,"dumpText","dateDump");
+                        new ChatServer(ChatActivity.this).execute("chatHistoryData",queryUsername,queryOpponentUsername,"dumpText","dumpDate");
+                        receiveServerData();
                         this.cancel();
                     }
                 }
-                public void onFinish() {
-                }
+                public void onFinish() {}
             }.start();
         }
         messagesContainer = (ListView) findViewById(R.id.messagesContainer);
@@ -83,54 +88,23 @@ public class ChatActivity extends AppCompatActivity {
         TextView meLabel = (TextView) findViewById(R.id.meLbl);
         TextView friendLabel = (TextView) findViewById(R.id.friendLabel);
         RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
-        showChats("First Test");
         db.close();
     }
 
-    /*private void recieveServerData(){
+    private void receiveServerData(){
         tm =new Timer();
         tm.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 runOnUiThread(new Runnable() {
                     public void run() {
                         ++counterSecond;
-                        if(socketResultChat.equals("inserted") | socketResultChat.equals("identified")){
-                            db.open();
-                            db.Update(username,1,"username");
-                            db.Update("yes",1,"registered");
-                            db.close();
-                            ObjectAnimator colorFade = ObjectAnimator.ofObject(registrationRl, "backgroundColor", new ArgbEvaluator(), Color.parseColor("#00bcd4"), 0xff8bc34a);
-                            colorFade.setDuration(2500);
-                            colorFade.start();
-                            myIndicator.smoothToHide();
+                        if(socketResultChat.equals("fetchHistoryChatDone")){
+                            showChatsHistory(socketClient1ChatsData, socketClient2ChatsData);
                             counterSecond = 0;
                             socketResultChat = "";
                             tm.cancel();
-                            Thread closeActivity = new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        Thread.sleep(2000);
-                                        Intent in = new Intent(RegistrationActivity.this,ChatActivity.class);
-                                        startActivity(in);
-                                        finish();
-                                    } catch (Exception e) {}
-                                }
-                            });
-                            closeActivity.start();
-                        }else if(socketResultChat.equals("identify_failed")){
-                            Toast.makeText(getApplicationContext(),"Username exist. Choose another username or enter correct password!" ,Toast.LENGTH_LONG).show();
-                            myIndicator.hide();
-                            goBtn.setVisibility(View.VISIBLE);
-                            goBtn.setText("Go again!");
-                            counterSecond = 0;
-                            socketResultChat = "";
-                            tm.cancel();
-                        }else if(socketResultChat.contains("Insert failed") | counterSecond == 5){
+                        }else if(counterSecond == 5){
                             Toast.makeText(getApplicationContext(),"Failure. Please try again!" ,Toast.LENGTH_LONG).show();
-                            myIndicator.hide();
-                            goBtn.setVisibility(View.VISIBLE);
-                            goBtn.setText("Go again!");
                             counterSecond = 0;
                             socketResultChat = "";
                             tm.cancel();
@@ -139,7 +113,7 @@ public class ChatActivity extends AppCompatActivity {
                 });
             }
         }, 0, 1000);
-    }*/
+    }
 
     public void displayMessage(ChatMessage message) {
         adapter.add(message);
@@ -151,19 +125,29 @@ public class ChatActivity extends AppCompatActivity {
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
     }
 
-    private void showChats(String textMessage){
+    private void showChatsHistory(String[] msgClient1, String[] msgClient2){
         chatHistory = new ArrayList<ChatMessage>();
         db.open();
-        int lastChatID = Integer.parseInt(db.Query(1,3));
-        ChatMessage msg = new ChatMessage();
-        msg.setId(lastChatID);
-        msg.setMe(true);
-        msg.setMessage(textMessage);
-        msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-        chatHistory.add(msg);
+        //Fix order
+        for(int i=0;msgClient1.length > i;i++){
+            ChatMessage msg = new ChatMessage();
+            msg.setId(i+1);
+            msg.setMe(true);
+            msg.setMessage(msgClient1[i]);
+            msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
+            chatHistory.add(msg);
+        }
+        for(int i=0;msgClient2.length > i;i++){
+            ChatMessage msg = new ChatMessage();
+            msg.setId(i+1);
+            msg.setMe(true);
+            msg.setMessage(msgClient1[i]);
+            msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
+            chatHistory.add(msg);
+        }
         adapter = new ChatAdapter(ChatActivity.this, new ArrayList<ChatMessage>());
         messagesContainer.setAdapter(adapter);
-        db.Update(String.valueOf(lastChatID+1),1,"lastChatId");
+        db.Update(String.valueOf(msgClient1.length+1),1,"lastChatId");
         db.close();
         for(int i=0; i<chatHistory.size(); i++) {
             ChatMessage message = chatHistory.get(i);

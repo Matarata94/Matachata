@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,7 +20,7 @@ public class ChatServer extends AsyncTask<String, Void, String> {
     public PrintWriter output;
     public OutputStream out;
     public InputStream input;
-    private String requestType="",username="",msgText="",msgDate="";
+    private String requestType="",username="",opponentUsername="",msgText="",msgDate="";
 
     public ChatServer(Context context) {
         this.context = context;
@@ -33,8 +34,9 @@ public class ChatServer extends AsyncTask<String, Void, String> {
     protected String doInBackground(String... arg0) {
         requestType = arg0[0];
         username = arg0[1];
-        msgText = arg0[2];
-        msgDate = arg0[3];
+        opponentUsername = arg0[2];
+        msgText = arg0[3];
+        msgDate = arg0[4];
         String result = "";
 
         try {
@@ -42,6 +44,7 @@ public class ChatServer extends AsyncTask<String, Void, String> {
             JSONObject myJsonObject = new JSONObject();
             myJsonObject.put("requestType", requestType);
             myJsonObject.put("username", username);
+            myJsonObject.put("opponentUsername", opponentUsername);
             myJsonObject.put("msgText", msgText);
             myJsonObject.put("msgDate", msgDate);
             out = socket.getOutputStream();
@@ -76,6 +79,16 @@ public class ChatServer extends AsyncTask<String, Void, String> {
                 JSONObject jsonObj = new JSONObject(jsonStr);
                 String jsonTempResult = jsonObj.getString("serverJsonResult");
                 ChatActivity.socketResultChat = jsonTempResult;
+                JSONArray arrJson= jsonObj.getJSONArray("client1ChatsData");
+                String[] arr=new String[arrJson.length()];
+                for(int i=0;i<arrJson.length();i++)
+                    arr[i]=arrJson.getString(i);
+                ChatActivity.socketClient1ChatsData = arr;
+                JSONArray arrJson2= jsonObj.getJSONArray("client2ChatsData");
+                String[] arr2=new String[arrJson2.length()];
+                for(int i=0;i<arrJson2.length();i++)
+                    arr2[i]=arrJson2.getString(i);
+                ChatActivity.socketClient2ChatsData = arr2;
             } catch (JSONException e) {
                 Toast.makeText(context, jsonStr + "\nJson Error: " + e.toString(), Toast.LENGTH_LONG).show();
             }

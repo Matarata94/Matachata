@@ -67,6 +67,26 @@
             android:layout_weight="0.5"
             app:met_floatingLabel="highlight"/>
 
+        <com.rengwuxian.materialedittext.MaterialEditText
+            android:id="@+id/registration_opponent_username"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:hint="Opponent Username..."
+            app:met_floatingLabelTextSize="15sp"
+            android:layout_marginTop="25dp"
+            app:met_baseColor="#ffffff"
+            app:met_textColorHint="#ffffff"
+            app:met_underlineColor="#ffffff"
+            android:cursorVisible="true"
+            app:met_floatingLabelTextColor="#ffffff"
+            app:met_floatingLabelText="Password"
+            android:inputType="text"
+            android:maxLines="1"
+            android:clickable="true"
+            android:gravity="center"
+            android:layout_weight="0.5"
+            app:met_floatingLabel="highlight"/>
+
     </LinearLayout>
 
     <com.rey.material.widget.Button
