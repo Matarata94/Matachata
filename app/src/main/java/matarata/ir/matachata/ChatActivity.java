@@ -13,7 +13,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -27,9 +30,9 @@ public class ChatActivity extends AppCompatActivity {
     private DatabaseHandler db = new DatabaseHandler(this);
     private Timer tm;
     private int counterSecond=0;
-    public static String socketResultChat="";
+    public static String socketResultChat="", socketRequestType = "";
     public static String[] socketUsernamesHistory ={}, socketMessagesHistory ={}, socketDatasHistory ={};
-    private String queryUsername="",queryOpponentUsername="",registered="";
+    private String queryUsername="",queryOpponentUsername="",registered="",messageText="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,17 +43,11 @@ public class ChatActivity extends AppCompatActivity {
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String messageText = messageET.getText().toString();
+                messageText = messageET.getText().toString();
                 if (TextUtils.isEmpty(messageText)) {
                     return;
                 }
-                /*ChatMessage chatMessage = new ChatMessage();
-                chatMessage.setId(122);//dummy
-                chatMessage.setMessage(messageText);
-                chatMessage.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-                chatMessage.setMe(true);
-                messageET.setText("");
-                displayMessage(chatMessage);*/
+                sendMsgToServer();
             }
         });
 
@@ -71,6 +68,7 @@ public class ChatActivity extends AppCompatActivity {
             new CountDownTimer(5000, 1000) {
                 public void onTick(long millisUntilFinished) {
                     if(SocketConnectionThread.socket.isConnected()){
+                        socketRequestType = "chatsHistory";
                         new ChatServer(ChatActivity.this).execute("chatHistoryData",queryUsername,queryOpponentUsername,"dumpText","dumpDate");
                         receiveServerData();
                         this.cancel();
@@ -139,7 +137,6 @@ public class ChatActivity extends AppCompatActivity {
             }
             msg.setMessage(messages[i]);
             msg.setDate(dates[i]);
-            //msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
             chatHistory.add(msg);
         }
         adapter = new ChatAdapter(ChatActivity.this, new ArrayList<ChatMessage>());
@@ -149,6 +146,50 @@ public class ChatActivity extends AppCompatActivity {
         for(int i=0; i<chatHistory.size(); i++) {
             ChatMessage message = chatHistory.get(i);
             displayMessage(message);
+        }
+        Arrays.fill(socketUsernamesHistory, null);
+        Arrays.fill(socketMessagesHistory, null);
+        Arrays.fill(socketDatasHistory, null);
+    }
+
+    private void sendMsgToServer(){
+        socketRequestType = "sendMsg";
+        db.open();
+        String tempUsername = db.Query(1,1);
+        String tempOpponentUsername = db.Query(1,2);
+        String tempDate = DateFormat.getDateTimeInstance().format(new Date());
+        db.close();
+        if(SocketConnectionThread.socket.isConnected()){
+            new ChatServer(ChatActivity.this).execute("msgSend",tempUsername,tempOpponentUsername,messageText,tempDate);
+            tm =new Timer();
+            tm.scheduleAtFixedRate(new TimerTask() {
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            ++counterSecond;
+                            if(socketResultChat.equals("recieved")){
+                                ChatMessage chatMessage = new ChatMessage();
+                                chatMessage.setId(122);
+                                chatMessage.setMessage(messageText);
+                                chatMessage.setDate(DateFormat.getDateTimeInstance().format(new Date()));
+                                chatMessage.setMe(true);
+                                messageET.setText("");
+                                displayMessage(chatMessage);
+                                counterSecond = 0;
+                                socketResultChat = "";
+                                tm.cancel();
+                            }else if(socketResultChat.contains("insert chat failed") | counterSecond == 5){
+                                Toast.makeText(getApplicationContext(),"Failure. Please try again!" ,Toast.LENGTH_LONG).show();
+                                counterSecond = 0;
+                                socketResultChat = "";
+                                tm.cancel();
+                            }
+                        }
+                    });
+                }
+            }, 0, 1000);
+        }else{
+            new Thread(new SocketConnectionThread(RegistrationActivity.SERVER_IP,RegistrationActivity.SERVERPORT)).start();
         }
     }
 

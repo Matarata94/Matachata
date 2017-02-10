@@ -26,7 +26,7 @@ public class RegistrationActivity extends AppCompatActivity {
     private Timer tm;
     private int counterSecond=0;
     private String username, password, opponentUsername;
-    public static final int SERVERPORT = 4004;
+    public static final int SERVERPORT = 4000;
     public static final String SERVER_IP = "192.168.1.3";
     public static String socketResultRegister ="";
     private DatabaseHandler db = new DatabaseHandler(this);
@@ -50,8 +50,8 @@ public class RegistrationActivity extends AppCompatActivity {
                 username = usernameET.getText().toString();
                 password = passwordET.getText().toString();
                 opponentUsername = opponentUsernameET.getText().toString();
-                if(username.equals("") | password.equals("")){
-                    Toast.makeText(getApplicationContext(),"Please enter username and password!",Toast.LENGTH_LONG).show();
+                if(username.equals("") | password.equals("") | opponentUsername.equals("")){
+                    Toast.makeText(getApplicationContext(),"Please fill all fields!",Toast.LENGTH_LONG).show();
                 }else{
                     new RegistrationServer(RegistrationActivity.this).execute("register",username,password,opponentUsername);
                     goBtn.setVisibility(View.INVISIBLE);

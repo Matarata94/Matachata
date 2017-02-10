@@ -5,7 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-class SocketConnectionThread implements Runnable {
+public class SocketConnectionThread implements Runnable {
 
     public static Socket socket;
     private String SERVER_IP;
