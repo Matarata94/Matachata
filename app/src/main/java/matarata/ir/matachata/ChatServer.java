@@ -79,16 +79,21 @@ public class ChatServer extends AsyncTask<String, Void, String> {
                 JSONObject jsonObj = new JSONObject(jsonStr);
                 String jsonTempResult = jsonObj.getString("serverJsonResult");
                 ChatActivity.socketResultChat = jsonTempResult;
-                JSONArray arrJson= jsonObj.getJSONArray("client1ChatsData");
-                String[] arr=new String[arrJson.length()];
+                JSONArray arrJson= jsonObj.getJSONArray("usernamesHistory");
+                String[] arrUsernames=new String[arrJson.length()];
                 for(int i=0;i<arrJson.length();i++)
-                    arr[i]=arrJson.getString(i);
-                ChatActivity.socketClient1ChatsData = arr;
-                JSONArray arrJson2= jsonObj.getJSONArray("client2ChatsData");
-                String[] arr2=new String[arrJson2.length()];
+                    arrUsernames[i]=arrJson.getString(i);
+                ChatActivity.socketUsernamesHistory = arrUsernames;
+                JSONArray arrJson2= jsonObj.getJSONArray("messagesHistory");
+                String[] arrMessagess=new String[arrJson2.length()];
                 for(int i=0;i<arrJson2.length();i++)
-                    arr2[i]=arrJson2.getString(i);
-                ChatActivity.socketClient2ChatsData = arr2;
+                    arrMessagess[i]=arrJson2.getString(i);
+                ChatActivity.socketMessagesHistory = arrMessagess;
+                JSONArray arrJson3= jsonObj.getJSONArray("datesHistory");
+                String[] arrDates=new String[arrJson3.length()];
+                for(int i=0;i<arrJson3.length();i++)
+                    arrDates[i]=arrJson3.getString(i);
+                ChatActivity.socketDatasHistory = arrDates;
             } catch (JSONException e) {
                 Toast.makeText(context, jsonStr + "\nJson Error: " + e.toString(), Toast.LENGTH_LONG).show();
             }

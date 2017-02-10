@@ -26,7 +26,7 @@ public class RegistrationActivity extends AppCompatActivity {
     private Timer tm;
     private int counterSecond=0;
     private String username, password, opponentUsername;
-    public static final int SERVERPORT = 4000;
+    public static final int SERVERPORT = 4004;
     public static final String SERVER_IP = "192.168.1.3";
     public static String socketResultRegister ="";
     private DatabaseHandler db = new DatabaseHandler(this);

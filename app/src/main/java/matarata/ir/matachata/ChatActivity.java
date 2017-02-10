@@ -13,9 +13,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -30,8 +28,7 @@ public class ChatActivity extends AppCompatActivity {
     private Timer tm;
     private int counterSecond=0;
     public static String socketResultChat="";
-    public static String[] socketClient1ChatsData ={};
-    public static String[] socketClient2ChatsData ={};
+    public static String[] socketUsernamesHistory ={}, socketMessagesHistory ={}, socketDatasHistory ={};
     private String queryUsername="",queryOpponentUsername="",registered="";
 
     @Override
@@ -63,7 +60,7 @@ public class ChatActivity extends AppCompatActivity {
         db.databasecreate();
         db.open();
         queryUsername = db.Query(1,1);
-        queryUsername = db.Query(1,2);
+        queryOpponentUsername = db.Query(1,2);
         registered = db.Query(1,3);
         if(registered.equals("no")){
             Intent in = new Intent(ChatActivity.this,RegistrationActivity.class);
@@ -88,6 +85,8 @@ public class ChatActivity extends AppCompatActivity {
         TextView meLabel = (TextView) findViewById(R.id.meLbl);
         TextView friendLabel = (TextView) findViewById(R.id.friendLabel);
         RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
+        meLabel.setText(queryUsername);
+        friendLabel.setText(queryOpponentUsername);
         db.close();
     }
 
@@ -99,7 +98,7 @@ public class ChatActivity extends AppCompatActivity {
                     public void run() {
                         ++counterSecond;
                         if(socketResultChat.equals("fetchHistoryChatDone")){
-                            showChatsHistory(socketClient1ChatsData, socketClient2ChatsData);
+                            showChatsHistory(socketUsernamesHistory,socketMessagesHistory,socketDatasHistory);
                             counterSecond = 0;
                             socketResultChat = "";
                             tm.cancel();
@@ -125,29 +124,27 @@ public class ChatActivity extends AppCompatActivity {
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
     }
 
-    private void showChatsHistory(String[] msgClient1, String[] msgClient2){
+    private void showChatsHistory(String[] usernames, String[] messages, String[] dates){
         chatHistory = new ArrayList<ChatMessage>();
         db.open();
-        //Fix order
-        for(int i=0;msgClient1.length > i;i++){
+        String meUsername = db.Query(1,1);
+        String opponentUsername = db.Query(1,2);
+        for(int i=0;usernames.length > i;i++){
             ChatMessage msg = new ChatMessage();
             msg.setId(i+1);
-            msg.setMe(true);
-            msg.setMessage(msgClient1[i]);
-            msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-            chatHistory.add(msg);
-        }
-        for(int i=0;msgClient2.length > i;i++){
-            ChatMessage msg = new ChatMessage();
-            msg.setId(i+1);
-            msg.setMe(true);
-            msg.setMessage(msgClient1[i]);
-            msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
+            if(usernames[i].equals(meUsername)){
+                msg.setMe(true);
+            }else if(usernames[i].equals(opponentUsername)){
+                msg.setMe(false);
+            }
+            msg.setMessage(messages[i]);
+            msg.setDate(dates[i]);
+            //msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
             chatHistory.add(msg);
         }
         adapter = new ChatAdapter(ChatActivity.this, new ArrayList<ChatMessage>());
         messagesContainer.setAdapter(adapter);
-        db.Update(String.valueOf(msgClient1.length+1),1,"lastChatId");
+        db.Update(String.valueOf(usernames.length+1),1,"lastChatId");
         db.close();
         for(int i=0; i<chatHistory.size(); i++) {
             ChatMessage message = chatHistory.get(i);

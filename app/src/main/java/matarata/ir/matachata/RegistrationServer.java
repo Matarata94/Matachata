@@ -41,8 +41,8 @@ public class RegistrationServer extends AsyncTask<String, Void, String> {
             JSONObject myJsonObject = new JSONObject();
             myJsonObject.put("requestType", requestType);
             myJsonObject.put("username", username);
+            myJsonObject.put("opponentUsername", opponentUsername);
             myJsonObject.put("password", password);
-            myJsonObject.put("oppponentUsername", opponentUsername);
             out = socket.getOutputStream();
             output = new PrintWriter(out);
             output.println(myJsonObject);

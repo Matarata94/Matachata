@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@drawable/chatbg">
 
      <RelativeLayout
          android:id="@+id/container"
@@ -18,6 +19,8 @@
               android:layout_height="wrap_content"
               android:layout_alignParentBottom="true"
               android:layout_marginRight="5dp"
+              android:textColor="#ffffff"
+              android:textColorHint="#fefefe"
               android:layout_toLeftOf="@+id/chatSendButton"
               android:hint="Type message..." />
 
@@ -27,6 +30,7 @@
               android:layout_height="25dp"
               android:layout_alignParentRight="true"
               android:layout_alignBottom="@+id/messageEdit"
+              android:layout_marginBottom="7dp"
               android:background="@drawable/send_icon"/>
 
           <ListView
@@ -48,15 +52,19 @@
               android:id="@+id/friendLabel"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
+              android:layout_marginLeft="15dp"
+              android:layout_marginTop="10dp"
               android:layout_gravity="left|center_vertical"
               android:text="MyFriend"
-              android:textColor="#03a9f4"
+              android:textColor="#e67e22"
               android:textSize="20dp" />
 
           <TextView
               android:id="@+id/meLbl"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
+              android:layout_marginRight="15dp"
+              android:layout_marginTop="10dp"
               android:layout_alignParentRight="true"
               android:text="MySelf"
               android:textColor="#8bc34a"
