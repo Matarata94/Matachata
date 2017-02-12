@@ -1,6 +1,9 @@
 package matarata.ir.matachata;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
@@ -9,9 +12,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.wang.avi.AVLoadingIndicatorView;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -33,6 +37,9 @@ public class ChatActivity extends AppCompatActivity {
     public static String socketResultChat="", socketRequestType = "";
     public static String[] socketUsernamesHistory ={}, socketMessagesHistory ={}, socketDatasHistory ={};
     private String queryUsername="",queryOpponentUsername="",registered="",messageText="";
+    private AVLoadingIndicatorView myIndicator;
+    private ConnectivityManager connectivityManager;
+    private NetworkInfo activeNetworkInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +54,10 @@ public class ChatActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(messageText)) {
                     return;
                 }
+                if(!isNetworkAvailable()){
+                    Toast.makeText(getApplicationContext(),"Please check your connection!",Toast.LENGTH_LONG).show();
+                    return;
+                }
                 sendMsgToServer();
             }
         });
@@ -54,18 +65,27 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void initiate(){
+        myIndicator = (AVLoadingIndicatorView) findViewById(R.id.chatActivity_indicator);
+        messagesContainer = (ListView) findViewById(R.id.messagesContainer);
+        messageET = (EditText) findViewById(R.id.messageEdit);
+        sendBtn = (Button) findViewById(R.id.chatSendButton);
+        TextView meLabel = (TextView) findViewById(R.id.meLbl);
+        TextView friendLabel = (TextView) findViewById(R.id.friendLabel);
         db.databasecreate();
         db.open();
         queryUsername = db.Query(1,1);
         queryOpponentUsername = db.Query(1,2);
         registered = db.Query(1,3);
+        db.close();
+        meLabel.setText(queryUsername);
+        friendLabel.setText(queryOpponentUsername);
         if(registered.equals("no")){
             Intent in = new Intent(ChatActivity.this,RegistrationActivity.class);
             startActivity(in);
             finish();
         }else{
             new Thread(new SocketConnectionThread(RegistrationActivity.SERVER_IP,RegistrationActivity.SERVERPORT)).start();
-            new CountDownTimer(5000, 1000) {
+            new CountDownTimer(4000, 1000) {
                 public void onTick(long millisUntilFinished) {
                     if(SocketConnectionThread.socket.isConnected()){
                         socketRequestType = "chatsHistory";
@@ -74,18 +94,16 @@ public class ChatActivity extends AppCompatActivity {
                         this.cancel();
                     }
                 }
-                public void onFinish() {}
+                public void onFinish() {
+                    if(!SocketConnectionThread.socket.isConnected()){
+                        try{
+                            SocketConnectionThread.socket.close();
+                        }catch (Exception e){}
+                        initiate();
+                    }
+                }
             }.start();
         }
-        messagesContainer = (ListView) findViewById(R.id.messagesContainer);
-        messageET = (EditText) findViewById(R.id.messageEdit);
-        sendBtn = (Button) findViewById(R.id.chatSendButton);
-        TextView meLabel = (TextView) findViewById(R.id.meLbl);
-        TextView friendLabel = (TextView) findViewById(R.id.friendLabel);
-        RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
-        meLabel.setText(queryUsername);
-        friendLabel.setText(queryOpponentUsername);
-        db.close();
     }
 
     private void receiveServerData(){
@@ -100,8 +118,11 @@ public class ChatActivity extends AppCompatActivity {
                             counterSecond = 0;
                             socketResultChat = "";
                             tm.cancel();
-                        }else if(counterSecond == 5){
-                            Toast.makeText(getApplicationContext(),"Failure. Please try again!" ,Toast.LENGTH_LONG).show();
+                        }else if(counterSecond == 7){
+                            Toast.makeText(getApplicationContext(),"Failure. Please try again!"+"\n"+socketResultChat ,Toast.LENGTH_LONG).show();
+                            try{
+                                SocketConnectionThread.socket.close();
+                            }catch (Exception e){}
                             counterSecond = 0;
                             socketResultChat = "";
                             tm.cancel();
@@ -150,6 +171,7 @@ public class ChatActivity extends AppCompatActivity {
         Arrays.fill(socketUsernamesHistory, null);
         Arrays.fill(socketMessagesHistory, null);
         Arrays.fill(socketDatasHistory, null);
+        myIndicator.smoothToHide();
     }
 
     private void sendMsgToServer(){
@@ -178,11 +200,28 @@ public class ChatActivity extends AppCompatActivity {
                                 counterSecond = 0;
                                 socketResultChat = "";
                                 tm.cancel();
-                            }else if(socketResultChat.contains("insert chat failed") | counterSecond == 5){
+                            }else if(socketResultChat.contains("insert chat failed")){
                                 Toast.makeText(getApplicationContext(),"Failure. Please try again!" ,Toast.LENGTH_LONG).show();
                                 counterSecond = 0;
                                 socketResultChat = "";
                                 tm.cancel();
+                            }else if(counterSecond == 4){
+                                try{
+                                    SocketConnectionThread.socket.close();
+                                }catch (Exception e){}
+                                counterSecond = 0;
+                                socketResultChat = "";
+                                tm.cancel();
+                                new Thread(new SocketConnectionThread(RegistrationActivity.SERVER_IP,RegistrationActivity.SERVERPORT)).start();
+                                new CountDownTimer(4000, 1000) {
+                                    public void onTick(long millisUntilFinished) {
+                                        if(SocketConnectionThread.socket.isConnected()){
+                                            this.cancel();
+                                            sendMsgToServer();
+                                        }
+                                    }
+                                    public void onFinish() {}
+                                }.start();
                             }
                         }
                     });
@@ -190,7 +229,22 @@ public class ChatActivity extends AppCompatActivity {
             }, 0, 1000);
         }else{
             new Thread(new SocketConnectionThread(RegistrationActivity.SERVER_IP,RegistrationActivity.SERVERPORT)).start();
+            new CountDownTimer(4000, 1000) {
+                public void onTick(long millisUntilFinished) {
+                    if(SocketConnectionThread.socket.isConnected()){
+                        this.cancel();
+                        sendMsgToServer();
+                    }
+                }
+                public void onFinish() {}
+            }.start();
         }
+    }
+
+    private boolean isNetworkAvailable() {
+        connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     @Override

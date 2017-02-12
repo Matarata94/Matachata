@@ -2,7 +2,6 @@ package matarata.ir.matachata;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -100,10 +99,10 @@ public class ChatServer extends AsyncTask<String, Void, String> {
                     ChatActivity.socketResultChat = jsonTempResult;
                 }
             } catch (JSONException e) {
-                Toast.makeText(context, jsonStr + "\nJson Error: " + e.toString(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, jsonStr + "\nJson Error: " + e.toString(), Toast.LENGTH_LONG).show();
             }
         } else {
-            Toast.makeText(context, "Couldn't get any JSON data.", Toast.LENGTH_LONG).show();
+            //Toast.makeText(context, "Couldn't get any JSON data.", Toast.LENGTH_LONG).show();
         }
     }
 }
